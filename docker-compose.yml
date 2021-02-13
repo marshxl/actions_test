@@ -1,0 +1,8 @@
+version: "3.5"
+
+services:
+
+  test-build:
+    image: my_image
+    container_name: my_image
+    restart: unless-stopped
