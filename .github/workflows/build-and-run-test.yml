@@ -24,6 +24,7 @@ jobs:
           webhook_secret: ${{ secrets.WEBHOOK_FETCH_SECRET_TEST_SERVER }}
 
   build-and-run:
+    needs: fetch-on-test-server
     runs-on: ubuntu-latest
     steps:
 
@@ -56,6 +57,11 @@ jobs:
       - name: Docker run
         run: |
           ./startContainer.sh
+
+  deploy:
+    needs: [fetch-on-test-server, build-and-run]
+    runs-on: ubuntu-latest
+    steps:
 
       - name: Deploy
         uses: distributhor/workflow-webhook@v1
