@@ -1,0 +1,64 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push or pull request events but only for the dev branch
+  push:
+    branches: [ dev ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  fetch-on-test-server:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Fetch on test server
+        uses: distributhor/workflow-webhook@v1
+        env:
+          webhook_url: ${{ secrets.WEBHOOK_FETCH_URL_TEST_SERVER }}
+          webhook_secret: ${{ secrets.WEBHOOK_FETCH_SECRET_TEST_SERVER }}
+
+  build-and-run:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: docker/setup-buildx-action@v1
+        id: buildx
+        with:
+          install: true
+
+      - name: Builder instance name
+        run: echo ${{ steps.buildx.outputs.name }}
+
+      - name: Available platforms
+        run: echo ${{ steps.buildx.outputs.platforms }}
+
+      - name: Pre-build script
+        run: |
+          ./preBuildScript.sh 
+
+      - name: Build container
+        run: |
+          ./buildContainer.sh 
+
+      - name: List docker images
+        run: |
+          docker images
+
+      - name: Docker run
+        run: |
+          ./startContainer.sh
+
+      - name: Deploy
+        uses: distributhor/workflow-webhook@v1
+        env:
+          webhook_url: ${{ secrets.WEBHOOK_DEPLOY_URL_TEST_SERVER }}
+          webhook_secret: ${{ secrets.WEBHOOK_DEPLOY_SECRET_TEST_SERVER }}
